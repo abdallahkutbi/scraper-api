@@ -25,6 +25,7 @@ app.get('/scrape', async (req, res) => {
 
   try {
     const scraper = new LinkedinScraper({
+      executablePath: '/usr/bin/chromium-browser',
       headless: 'new',
       protocolTimeout: 120000,
       slowMo: 500,
@@ -38,7 +39,8 @@ app.get('/scrape', async (req, res) => {
         '--disable-web-security',
         '--disable-client-side-phishing-detection',
         '--disable-notifications',
-        '--mute-audio'
+        '--mute-audio',
+        '--single-process',
       ],
       defaultViewport: null,
       pipe: true,
