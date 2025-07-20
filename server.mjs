@@ -28,7 +28,7 @@ app.get('/scrape', async (req, res) => {
       // Use Chromium path from env (set in Dockerfile), fallback to default
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       headless: 'new',
-      sessionCookieValue: process.env.LI_AT_COOKIE,
+      sessionCookieValue: 'AQEDATsjBxsBJIGKAAABly0M0roAAAGYM5DTVE4AeHtQ1vXkIvv-u6w7L1_OkCylZBlEV5JOAIRupzbwcv4FdD8pB3PbOT6wzUFHJLJh6Yeh7iVevPjkfY4ADMJgQDi_f8QWzIUi7a8v1upS-5RTnrlg',
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
