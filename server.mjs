@@ -66,7 +66,6 @@ app.get('/scrape', async (req, res) => {
       {
         limit: 5,
         filters: {
-          relevance: relevanceFilters.RECENT,
         }
       }
     );
