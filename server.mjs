@@ -1,75 +1,89 @@
 import express from 'express';
 import cors from 'cors';
-import { LinkedinScraper, events } from 'linkedin-jobs-scraper';
+import { LinkedinScraper, relevanceFilters } from 'linkedin-jobs-scraper';
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(cors());
 
-// Replace this with your valid li_at cookie from LinkedIn
-const LI_AT_COOKIE = 'AQEDATsjBxsBJIGKAAABly0M0roAAAGYM5DTVE4AeHtQ1vXkIvv-u6w7L1_OkCylZBlEV5JOAIRupzbwcv4FdD8pB3PbOT6wzUFHJLJh6Yeh7iVevPjkfY4ADMJgQDi_f8QWzIUi7a8v1upS-5RTnrlg';
+// Root route just to verify service is running
+app.get('/', (req, res) => {
+  res.send('✅ Scraper API is running! Use /scrape?q=<job title>');
+});
 
 app.get('/scrape', async (req, res) => {
   const query = req.query.q;
   if (!query) {
-    return res.status(400).json({ error: 'Missing q parameter (job title)' });
+    return res.status(400).json({ error: 'Missing ?q=<job title>' });
   }
 
-  console.log(`🔎 Scraping LinkedIn jobs for query: "${query}"`);
+  console.log(`🚀 Incoming scrape request for: ${query}`);
 
-  const scraper = new LinkedinScraper({
-    headless: true,
-    sessionCookieValue: LI_AT_COOKIE,
-    slowMo: 500, // throttle between actions (increase if still blocked)
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-    ],
-  });
-
+  // Results container
   const results = [];
 
-  scraper.on(events.scraper.data, (data) => {
-    results.push({
-      title: data.title,
-      company: data.company,
-      location: data.location,
-      date: data.date,
-      applyLink: data.applyLink,
-      description: data.description,
-    });
-  });
-
-  scraper.on(events.scraper.error, (err) => {
-    console.error('⚠️ Scraper error:', err);
-  });
-
-  scraper.on(events.scraper.end, () => {
-    console.log(`✅ Scraping finished. Found ${results.length} jobs.`);
-    res.json(results);
-  });
-
   try {
-    await scraper.run(
-      [
-        {
-          query: query,
-          options: {},
-        },
+    // Initialize the scraper with options
+    const scraper = new LinkedinScraper({
+      headless: 'new', // use modern headless mode
+      protocolTimeout: 120000, // increase protocol timeout
+      slowMo: 500,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-accelerated-2d-canvas',
+        '--allow-running-insecure-content',
+        '--disable-web-security',
+        '--disable-client-side-phishing-detection',
+        '--disable-notifications',
+        '--mute-audio'
       ],
+      defaultViewport: null,
+      pipe: true,
+      // Optional: sessionCookieValue if you have a valid LinkedIn session
+      // sessionCookieValue: 'YOUR_SESSION_COOKIE_HERE'
+    });
+
+    // Event listener
+    scraper.on('data', (job) => {
+      console.log(`✅ Scraped job: ${job.title} @ ${job.company}`);
+      results.push({
+        title: job.title,
+        company: job.company,
+        location: job.place,
+        date: job.date,
+        description: job.description
+      });
+    });
+
+    scraper.on('error', (err) => {
+      console.error('⚠️ Scraper error:', err);
+    });
+
+    console.log('🔧 Starting scraper run…');
+    await scraper.run(
+      `https://www.linkedin.com/jobs/search?keywords=${encodeURIComponent(
+        query
+      )}&location=United%20States`,
       {
-        locations: ['United States'],
-        limit: 5, // keep low to avoid being blocked
+        limit: 5, // keep low to test; increase once stable
+        filters: {
+          relevance: relevanceFilters.RECENT,
+        }
       }
     );
+
+    console.log('✅ Scraper finished, sending response.');
+    res.json(results);
   } catch (err) {
     console.error('❌ Fatal scraper error:', err);
-    res.status(500).json({ error: 'Scraping failed', details: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`✅ Scraper API listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`✅ Scraper API listening on port ${PORT}`);
 });
