@@ -25,7 +25,7 @@ app.get('/scrape', async (req, res) => {
 
   try {
     const scraper = new LinkedinScraper({
-      executablePath: '/usr/bin/chromium-browser',
+      executablePath: '/usr/bin/chromium',
       headless: 'new',
       protocolTimeout: 120000,
       slowMo: 500,
