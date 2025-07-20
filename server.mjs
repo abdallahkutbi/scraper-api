@@ -2,14 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import pkg from 'linkedin-jobs-scraper';
 
-const { LinkedinScraper, relevanceFilters } = pkg;
+const { LinkedinScraper } = pkg; // relevanceFilters removed, not needed
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 
-// Root route
+// Health check route
 app.get('/', (req, res) => {
   res.send('✅ Scraper API is running! Use /scrape?q=<job title>');
 });
@@ -25,26 +25,24 @@ app.get('/scrape', async (req, res) => {
 
   try {
     const scraper = new LinkedinScraper({
-      executablePath: '/usr/bin/chromium',
+      // Use Chromium path from env (set in Dockerfile), fallback to default
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       headless: 'new',
-      protocolTimeout: 120000,
-      slowMo: 500,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-gpu',
         '--disable-accelerated-2d-canvas',
-        '--allow-running-insecure-content',
         '--disable-web-security',
         '--disable-client-side-phishing-detection',
         '--disable-notifications',
         '--mute-audio',
-        '--single-process',
+        '--single-process'
       ],
       defaultViewport: null,
       pipe: true,
-      // sessionCookieValue: 'YOUR_SESSION_COOKIE_HERE'
+      protocolTimeout: 120000
     });
 
     scraper.on('data', (job) => {
@@ -59,14 +57,15 @@ app.get('/scrape', async (req, res) => {
     });
 
     scraper.on('error', (err) => {
-      console.error('⚠️ Scraper error:', err);
+      console.error('⚠️ Scraper error event:', err);
     });
 
     console.log('🔧 Starting scraper run…');
     await scraper.run(
       `https://www.linkedin.com/jobs/search?keywords=${encodeURIComponent(query)}&location=United%20States`,
       {
-        limit: 5,
+        limit: 5 // you can increase this later
+        // no filters because relevanceFilters isn’t supported
       }
     );
 
