@@ -65,8 +65,6 @@ app.get('/scrape', async (req, res) => {
       `https://www.linkedin.com/jobs/search?keywords=${encodeURIComponent(query)}&location=United%20States`,
       {
         limit: 5,
-        filters: {
-        }
       }
     );
 
