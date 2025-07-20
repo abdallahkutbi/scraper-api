@@ -62,13 +62,15 @@ app.get('/scrape', async (req, res) => {
 
     console.log('🔧 Starting scraper run…');
 
-    await scraper.run(query, {
+    await scraper.run([
+        {
         query: query,
         options: {
             locations: ['United States'],
             limit: 5
         },
-    });
+    }
+    ]);
 
     console.log('✅ Scraper finished, sending response.');
     res.json(results);
