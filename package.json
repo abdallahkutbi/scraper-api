@@ -10,7 +10,8 @@
     "test-authenticated": "DEBUG=scraper:info jest authenticated.test.ts",
     "test-authenticated-mocha": "DEBUG=scraper:info mocha --timeout 300000 src/test/authenticated.test.ts",
     "test-authenticated-node": "DEBUG=scraper:info ts-node src/test/dummy.ts",
-    "test-anonymous": "DEBUG=scraper:info jest anonymous.test.ts"
+    "test-anonymous": "DEBUG=scraper:info jest anonymous.test.ts",
+    "start": "node server.mjs"
   },
   "repository": {
     "type": "git",
@@ -23,9 +24,12 @@
   "author": "Ludovico Fabbri",
   "license": "MIT",
   "dependencies": {
+    "cors": "^2.8.5",
     "debug": "^4.4.0",
     "deepmerge": "^4.3.1",
-    "puppeteer": "^24.4.0",
+    "express": "^5.1.0",
+    "linkedin-jobs-scraper": "^18.0.1",
+    "puppeteer": "^24.14.0",
     "random-useragent": "^0.5.0",
     "typed-emitter": "^2.1.0"
   },
@@ -53,4 +57,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }
+  
 }
