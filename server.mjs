@@ -1,13 +1,15 @@
 import express from 'express';
 import cors from 'cors';
-import { LinkedinScraper, relevanceFilters } from 'linkedin-jobs-scraper';
+import pkg from 'linkedin-jobs-scraper';
+
+const { LinkedinScraper, relevanceFilters } = pkg;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-// Root route just to verify service is running
+// Root route
 app.get('/', (req, res) => {
   res.send('✅ Scraper API is running! Use /scrape?q=<job title>');
 });
@@ -19,15 +21,12 @@ app.get('/scrape', async (req, res) => {
   }
 
   console.log(`🚀 Incoming scrape request for: ${query}`);
-
-  // Results container
   const results = [];
 
   try {
-    // Initialize the scraper with options
     const scraper = new LinkedinScraper({
-      headless: 'new', // use modern headless mode
-      protocolTimeout: 120000, // increase protocol timeout
+      headless: 'new',
+      protocolTimeout: 120000,
       slowMo: 500,
       args: [
         '--no-sandbox',
@@ -43,11 +42,9 @@ app.get('/scrape', async (req, res) => {
       ],
       defaultViewport: null,
       pipe: true,
-      // Optional: sessionCookieValue if you have a valid LinkedIn session
       // sessionCookieValue: 'YOUR_SESSION_COOKIE_HERE'
     });
 
-    // Event listener
     scraper.on('data', (job) => {
       console.log(`✅ Scraped job: ${job.title} @ ${job.company}`);
       results.push({
@@ -65,11 +62,9 @@ app.get('/scrape', async (req, res) => {
 
     console.log('🔧 Starting scraper run…');
     await scraper.run(
-      `https://www.linkedin.com/jobs/search?keywords=${encodeURIComponent(
-        query
-      )}&location=United%20States`,
+      `https://www.linkedin.com/jobs/search?keywords=${encodeURIComponent(query)}&location=United%20States`,
       {
-        limit: 5, // keep low to test; increase once stable
+        limit: 5,
         filters: {
           relevance: relevanceFilters.RECENT,
         }
