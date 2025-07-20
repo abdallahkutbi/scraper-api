@@ -61,13 +61,12 @@ app.get('/scrape', async (req, res) => {
     });
 
     console.log('🔧 Starting scraper run…');
-    await scraper.run(
-      `https://www.linkedin.com/jobs/search?keywords=${encodeURIComponent(query)}&location=United%20States`,
-      {
-        limit: 5 // you can increase this later
-        // no filters because relevanceFilters isn’t supported
-      }
-    );
+    
+    await scraper.run(query, {
+        locations: ['United States'],
+        limit: 5
+      });
+      
 
     console.log('✅ Scraper finished, sending response.');
     res.json(results);
